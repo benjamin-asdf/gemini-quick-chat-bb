@@ -1,0 +1,63 @@
+* Concept
+
+- Gemini api calls using babashka
+
+* Usage
+
+- Use `--input` for text, `--file` for a file.
+- stream-chat for a streamed response
+
+#+begin_src sh
+bb -x gemini-chat/chat --input "explain what yerba mate is"
+#+end_src
+
+#+begin_src sh
+bb -x gemini-chat/stream-chat --file Readme.org
+#+end_src
+
+** emacs:
+
+- something like..
+
+  #+begin_src elisp
+
+    (defun gemini-quick-chat (arg)
+     (interactive "P")
+     (let* ((text (if (use-region-p)
+                      (buffer-substring-no-properties
+                       (region-beginning)
+                       (region-end))
+                    (buffer-substring-no-properties
+                     (point-min)
+                     (point-max))))
+            (text (concat
+                   text
+                   (when arg
+                     (concat
+                      "\n"
+                      (read-string "Q: "))))))
+       (gemini-quick--stream text)))
+
+     (defun gemini-quick--stream (input)
+       ;; FIXME
+       (let* ((default-directory "/home/benj/repos/gemini-chat/")
+              (file (concat
+                     "/tmp/gemini-quick--stream-"
+                     (s-trim
+                      (shell-command-to-string
+                       "uuidgen"))))
+              (command (format
+                        "bb -x gemini-chat/stream-chat --file '%s'"
+                        file)))
+         (with-current-buffer
+             (find-file-noselect file)
+           (insert input)
+           (save-buffer))
+         (with-current-buffer
+             (window-buffer
+              (async-shell-command command))
+           ;; that's from
+           ;; https://github.com/benjamin-asdf/gemini-quick.el
+           ;; (gemini-quick-chat-mode)
+           )))
+  #+end_src
