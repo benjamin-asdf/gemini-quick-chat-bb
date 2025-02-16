@@ -9,9 +9,9 @@
 (def api-key
   (memoize
    (fn []
-     (str)
-     (p/exec
-      "/home/benj/repos/gemini-chat/resources/script/gemini_api_key.sh"))))
+     (str/trim
+      (p/exec
+       "script/gemini_api_key.sh")))))
 
 (defn generate-content
   "Sends a request to the Gemini API to generate content based on the given text."
@@ -132,15 +132,14 @@
                             (.getMessage e))))))))))
 
 
-(comment
 
+
+
+
+(comment
   (stream-chat {:input "Write a short poem about clojure"
                 :file nil})
 
 
   (stream-chat {:file "/home/benj/repos/gemini-chat/src/gemini_chat.clj"})
-  *1
-
-
-
-  )
+  *1)
